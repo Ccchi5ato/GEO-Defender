@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "geo-defender"
+version = "1.0.0"
+description = "Implementation of GEO Defender for defending generative search against malicious GEO"
+requires-python = ">=3.10"
+dependencies = [
+  "accelerate>=0.33",
+  "bitsandbytes>=0.43",
+  "openai>=1.40",
+  "peft>=0.18",
+  "PyYAML>=6.0",
+  "safetensors>=0.4",
+  "torch>=2.4",
+  "transformers>=4.51"
+]
+
+[tool.setuptools.packages.find]
+include = ["geo_defender*"]

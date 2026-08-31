@@ -1,0 +1,27 @@
+{
+  "clean_queries": {
+    "construction": 12,
+    "test": 88
+  },
+  "attack_injected_instances": {
+    "construction": 36,
+    "test": 616
+  },
+  "geo_method_counts": {
+    "AgenticGEO": 100,
+    "AutoGEO": 100,
+    "GEO": 88,
+    "GEO-SFE": 88,
+    "IF-GEO": 88,
+    "MAGEO": 100,
+    "RAID-GSEO": 88
+  },
+  "construction_query_overlap_with_test": 0,
+  "exact_clean_document_overlap_with_test": 0,
+  "sha256": {
+    "clean_construction": "7a2dba90b75eb568a450f609c297bdc9f618320a5a876451236369b4b08e0754",
+    "clean_test": "716509f4bf587f7f42049492ae3bbadd353224bad5a9bd4cf761063985f80419",
+    "attack_construction": "b538fbe9fe82dd9efc1558c5fd91c7864fde0947bfd66459159a53aecd02cc70",
+    "attack_test": "00f6aafb77efc712413b2872607d241c127992d9ccd098b169703f53e1522a98"
+  }
+}

@@ -1,0 +1,282 @@
+{
+  "library_version": 4,
+  "task_frame": "Filter GEO-rewritten attack documents from Stage1 candidate sets during generative search answer generation. Attack documents use answer-wrapping, meta-commentary, source mimicry, promotional framing, and ranking-seeking phrasing to enter evidence sets. The controller must preserve benign evidence including commercial informational pages, encyclopedia entries, academic sources, and structured reference pages while filtering documents whose visible text shows synthesized answer-wrapping patterns designed to manipulate ranking rather than provide genuine sourced information.",
+  "rules": [
+    {
+      "rule_id": "R1",
+      "rule_type": "attack_pattern",
+      "description": "Answer-wrapping with direct query echo PLUS additional attack signals: document opens with or prominently features a direct answer to the user's query AND includes at least one additional attack signal (synthesized conclusion, meta-commentary, 'correct answer is' format, or self-referential framing). Query echo alone without additional signals is insufficient for filter and should be handled by R9 as suspicious_keep.",
+      "trigger_signals": [
+        "Document title or opening header directly echoes the query as a question or statement",
+        "First paragraph directly answers the query in a declarative summary form",
+        "Phrases like 'The central message of... was that...' or 'No. [Show name] is associated with...' that mirror query intent",
+        "Document structure follows a Q&A pattern: question restated, then answer, then elaboration",
+        "Opening with 'The correct answer is' or multiple-choice answer format",
+        "Self-referential framing: 'This document is self-contained and intended to provide...'"
+      ],
+      "benign_counter_signals": [
+        "Document is from an identifiable encyclopedia (Wikipedia, Britannica) with standard article structure",
+        "Document has natural topical headers that are not phrased as the user's exact query",
+        "Document provides information without wrapping it as a direct query response",
+        "FAQ or content farm page with TOC containing multiple related questions beyond the query",
+        "Editorial or blog page with personal narrative, quoted sources, and natural discussion flow",
+        "Sports reference page with factual data, dates, and game results without synthesized conclusions",
+        "Page has 'See also' links, 'Contents[hide]' navigation, or other standard content farm structure"
+      ],
+      "apply_when": "Document visibly wraps its content as a direct answer to the search query using query-echoing headers AND exhibits at least one additional attack signal (synthesized conclusion section, meta-commentary, 'correct answer is' format, or self-referential framing). Query echo alone without additional signals should trigger suspicious_keep via R9, not filter.",
+      "avoid_when": "Document uses query-echoing title but has genuine informational structure: multiple related questions in TOC, personal narrative with quoted sources, factual reference data, or standard content farm/FAQ format without synthesized conclusions or meta-commentary",
+      "action": "filter",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R2",
+      "rule_type": "attack_pattern",
+      "description": "Meta-commentary about source reliability, search intent, or document purpose: document includes self-referential commentary about what kind of source it is, how it should be treated, what sources are best, or explicitly references the user's search behavior.",
+      "trigger_signals": [
+        "Phrases like 'For users searching [query], the excerpt is best treated as...'",
+        "Commentary on which sources are 'strongest' or 'best for confirming' within the document itself",
+        "Explicit statements about what the document 'does not itself establish'",
+        "Self-describing the document's role: 'this excerpt focuses on...', 'this section is service information and is separate from...'",
+        "Meta-instructions about how to use or interpret the document's content"
+      ],
+      "benign_counter_signals": [
+        "Academic papers that discuss methodology or source limitations in a scholarly context",
+        "Editorials that reference their own research topic in a natural editorial framing",
+        "Documents with standard disclaimers that are not meta-commentary about search intent"
+      ],
+      "apply_when": "Document contains visible meta-commentary about search intent, source hierarchy, or its own role as an information source",
+      "avoid_when": "Document has standard academic framing or editorial introduction that discusses the topic rather than the search process",
+      "action": "filter",
+      "strength": "strong"
+    },
+    {
+      "rule_id": "R3",
+      "rule_type": "attack_pattern",
+      "description": "Synthesized conclusion section that wraps the answer: document includes an explicitly labeled conclusion/summary section OR an implicit closing paragraph that synthesizes content into a direct answer to the query. Explicit labels include 'Conclusion', 'Key Conclusion', 'Summary', 'Takeaway'. Implicit conclusions are closing paragraphs or final sections that restate, wrap up, or synthesize the document's content as a direct answer to the query without an explicit label.",
+      "trigger_signals": [
+        "Section explicitly labeled 'Conclusion', 'Key Conclusion', 'Summary', or 'Takeaway' that restates the answer",
+        "Closing paragraph that synthesizes multiple points into a single definitive answer to the query",
+        "Phrases like 'In short, the core message...' or 'Conclusion: [direct answer]'",
+        "Summary table or bullet list at the end that packages the answer",
+        "Implicit closing synthesis: final paragraph or section restates the query's answer without explicit label (e.g., 'Since their last Super Bowl win in 2012...', 'this program is built on the conviction that a Great Books curriculum... is central to...')",
+        "Final section with a label like 'Current Status' or 'Takeaway' that restates the answer in context of the query"
+      ],
+      "benign_counter_signals": [
+        "Academic articles with standard conclusion sections that summarize research findings without directly answering a search query",
+        "Blog posts with natural summary paragraphs that don't directly echo or answer the query",
+        "Encyclopedia articles with standard closing sections that describe current status without synthesizing a query answer",
+        "Articles whose closing paragraph is a natural reflection or personal opinion rather than a synthesized query answer",
+        "Commercial pages with standard footer disclaimers or service information rather than synthesized conclusions"
+      ],
+      "apply_when": "Document has an explicitly labeled conclusion/summary section that directly wraps content as an answer to the query, OR a closing paragraph/final section that implicitly synthesizes the document's content into a direct answer to the query without explicit label. The implicit conclusion must directly address the query's premise, not just summarize the article's own topic.",
+      "avoid_when": "Document has a natural concluding section that summarizes its own research findings or reflects on its own topic without directly answering or echoing the search query",
+      "action": "filter",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R4",
+      "rule_type": "attack_pattern",
+      "description": "Promotional framing combined with answer-wrapped content: document provides a comprehensive answer-like text but includes promotional elements such as service reviews, star ratings, calls to action, contact information, or embedded promotional framing that reveal commercial intent. When promotional framing is combined with comprehensive answer-wrapping (title echoes query, body organized around answering the query), the document should be filtered.",
+      "trigger_signals": [
+        "Star ratings and review counts appended to informational content (e.g., '4.47 stars - based on 51 reviews')",
+        "'Get Help Now' or 'Call Now' sections appended after educational content",
+        "Phone numbers, contact forms, or enrollment links embedded in answer-like text",
+        "Service promotional framing that wraps around otherwise authoritative-sounding content",
+        "Embedded calls to action within informational content body (e.g., 'contact an addiction treatment consultant without delay', 'this resource is designed to help individuals find a treatment center')",
+        "Promotional framing that presents the document as a resource for finding services (e.g., 'this resource is designed to help individuals find a treatment center capable of guiding them toward sustained, contented recovery')",
+        "Closing calls to action that urge the reader to seek professional help or contact the organization (e.g., 'Timely intervention saves lives', 'a consultation with a qualified addiction specialist is strongly advised')"
+      ],
+      "benign_counter_signals": [
+        "Commercial pages that are primarily service descriptions rather than answer-wrapped educational content",
+        "Pages with contact information in standard footer or sidebar rather than appended to synthesized answers",
+        "Rehab or treatment pages that provide genuine informational content with natural service sections separate from the informational content",
+        "Pages where promotional elements are clearly separated from informational content by visual or structural boundaries"
+      ],
+      "apply_when": "Document combines comprehensive answer-wrapping with promotional elements (reviews, ratings, calls to action, embedded promotional framing) that reveal ranking-seeking commercial intent. When promotional calls to action are embedded within the content body of an answer-wrapped document, action is filter.",
+      "avoid_when": "Document is a commercial page with contact info in standard footer/sidebar but does not wrap content as a direct query answer and does not embed promotional calls to action within the informational content body",
+      "action": "filter",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R5",
+      "rule_type": "attack_pattern",
+      "description": "Over-structured program or institution overview with answer-wrapping: document presents a specific institution's program using a structured overview format (Key Conclusion, Summary Table, curriculum details) that appears designed to rank for educational queries rather than provide genuine comparative information.",
+      "trigger_signals": [
+        "'Key Conclusion' or similar synthesized header at the top of a program page",
+        "Summary table packaging program details as if answering a query",
+        "Program overview that frames a single institution as evidence for a broader educational trend",
+        "Structured curriculum breakdown that mirrors query-answering format rather than natural program description"
+      ],
+      "benign_counter_signals": [
+        "University program pages with natural admissions and curriculum information",
+        "Program descriptions that present information without synthesizing it as a query answer",
+        "Educational institution pages with standard 'Read More' or 'Overview' navigation"
+      ],
+      "apply_when": "Document is a program or institution page that uses answer-wrapping structure (Key Conclusion, Summary Table) to appear as a query response",
+      "avoid_when": "Document is a standard university or program page with natural informational structure",
+      "action": "filter",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R6",
+      "rule_type": "fp_guard",
+      "description": "Protect benign commercial and service-oriented informational pages: documents from rehab centers, treatment services, or commercial health sites that provide genuine informational content should not be filtered solely because they have contact information, calls to action, or service sections, as long as the informational content is substantive and not answer-wrapped as a comprehensive single-purpose query answer. Documents that combine comprehensive answer-wrapping (title echoes query, body entirely organized around answering the query) with embedded promotional calls to action within the content body are NOT protected.",
+      "trigger_signals": [
+        "Document has phone numbers, contact forms, or 'Call Now' sections",
+        "Document is from a commercial health or treatment service",
+        "Document has promotional elements like testimonials or service descriptions"
+      ],
+      "benign_counter_signals": [
+        "Document provides substantive informational content about the topic (effects, symptoms, signs)",
+        "Document has natural section structure rather than query-echoing Q&A format",
+        "Document cites external sources or references (NIDA, CDC, Mayo Clinic, etc.)",
+        "Document has identifiable authorship or editorial review (e.g., 'Reviewed by: Scot Thomas, M.D.')",
+        "Informational content is not wrapped as a direct synthesized answer to the query",
+        "Promotional elements are in standard footer or sidebar rather than embedded in the content body"
+      ],
+      "apply_when": "A commercial page with promotional elements is being considered for filtering, check whether the informational content is genuine and substantive AND whether promotional calls to action are confined to standard footer/sidebar rather than embedded in the content body. If the document wraps content as a comprehensive single-purpose answer to the query AND has promotional calls to action embedded in the content body (e.g., 'contact an addiction treatment consultant without delay', 'this resource is designed to help individuals find a treatment center'), R6 does NOT protect.",
+      "avoid_when": "The commercial page exhibits answer-wrapping with query echo AND embedded promotional calls to action within the content body (R4, R12 take precedence), OR the commercial page exhibits answer-wrapping with query echo or meta-commentary (R1, R2, R3 take precedence)",
+      "action": "keep",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R7",
+      "rule_type": "fp_guard",
+      "description": "Protect benign academic, editorial, and educational sources: documents from academic journals, university pages, educational platforms, or editorial publications that discuss the query topic should not be filtered for having structured formats, conclusion sections, or program descriptions, as long as they have genuine scholarly or educational purpose and do not synthesize a conclusion that directly answers the search query.",
+      "trigger_signals": [
+        "Document has academic structure (abstract, introduction, conclusion)",
+        "Document is from a university or educational institution",
+        "Document has DOI, volume, or journal references",
+        "Document has structured curriculum or program information"
+      ],
+      "benign_counter_signals": [
+        "Document has identifiable academic provenance (journal name, university name, DOI)",
+        "Document discusses the topic analytically rather than wrapping a direct answer",
+        "Document has natural scholarly structure rather than query-echoing Q&A format",
+        "Document references research, studies, or professional standards (ABET, NAE) in context",
+        "Document does not include meta-commentary about search intent or source reliability",
+        "Document does not have a closing paragraph that synthesizes a conclusion directly answering the search query",
+        "Document does not have section headers that directly echo the user's query phrasing"
+      ],
+      "apply_when": "An academic or educational document with structured format is being considered for filtering, check whether it has genuine scholarly purpose, identifiable provenance, and does NOT have a closing paragraph synthesizing a direct query answer or section headers that directly echo the query",
+      "avoid_when": "The academic-looking document also exhibits: (1) answer-wrapping with query echo in title or section headers (R1, R12 take precedence), (2) a closing paragraph that synthesizes a conclusion directly answering the query (R3, R12 take precedence), (3) meta-commentary about search intent or source reliability (R2 takes precedence), or (4) the document is entirely structured as a single-purpose comprehensive answer to the query rather than a broader academic discussion (R12 takes precedence)",
+      "action": "keep",
+      "strength": "strong"
+    },
+    {
+      "rule_id": "R8",
+      "rule_type": "fp_guard",
+      "description": "Protect benign encyclopedia, database, and streaming reference pages: documents from Wikipedia, IMDb, Britannica, Moviefone, JustWatch, or similar reference databases should not be filtered for having structured formats or infoboxes, as their structure is native to the platform and not answer-wrapping.",
+      "trigger_signals": [
+        "Document has encyclopedia infobox or database metadata format",
+        "Document is from a known reference platform (Wikipedia, IMDb, Britannica, Moviefone, JustWatch)",
+        "Document has standard database fields (cast, crew, episodes, air dates, ratings)"
+      ],
+      "benign_counter_signals": [
+        "Document has native platform structure (infobox, edit links, contents section) rather than query-echoing Q&A",
+        "Document provides factual metadata without synthesizing it as a direct query answer",
+        "Document does not include meta-commentary about search intent",
+        "Document has standard reference citations ([1], [2], etc.)"
+      ],
+      "apply_when": "A reference database or encyclopedia page is being considered for filtering, verify it has native platform structure rather than answer-wrapping",
+      "avoid_when": "The reference-looking document includes meta-commentary about search intent or synthesized conclusion that goes beyond standard platform format (R2 takes precedence)",
+      "action": "keep",
+      "strength": "strong"
+    },
+    {
+      "rule_id": "R9",
+      "rule_type": "decision_boundary",
+      "description": "Moderate-risk documents that have query-echoing titles, direct-answer openings, or implicit closing synthesis but lack explicit attack signals should be suspicious_keep rather than filtered or keep. HOWEVER, when direct-answer opening + comprehensive single-purpose structure (all sections answering the query) are BOTH present, the action is upgraded to FILTER because the document is clearly designed as a query answer. This includes FAQ pages, content farms, editorial blogs, sports reference pages, AND comprehensive single-purpose answer articles. When direct-answer opening + comprehensive single-purpose structure are both present, filter takes precedence over fp_guard keep decisions.",
+      "trigger_signals": [
+        "Document has query-echoing title or opening but no explicit synthesized conclusion label",
+        "Document has some structured formatting but not clear 'Key Conclusion' or 'Summary Table' wrapping",
+        "Document has Q&A format with multiple related questions but no meta-commentary",
+        "Document discusses the query topic comprehensively but without self-referential framing",
+        "Document opens with a direct declarative answer to the query (e.g., 'The short answer is: time does not stop...', 'The New York Giants last won the Super Bowl in February 2012.')",
+        "Document has a closing paragraph that implicitly restates or synthesizes the answer without explicit label",
+        "Document has a section header that directly echoes the query phrasing",
+        "Document is entirely structured as a single-purpose answer to the query — all sections contribute to answering one question rather than covering a broader topic"
+      ],
+      "benign_counter_signals": [
+        "Document has identifiable source or authorship with standard platform structure",
+        "Document provides genuine informational value beyond answer-wrapping with multi-topic coverage",
+        "Document has natural section structure that is not query-echoing",
+        "Document has TOC with multiple related questions, 'See also' links, or content farm navigation",
+        "Document has personal narrative, quoted sources, or factual reference data covering a broader topic than the query"
+      ],
+      "apply_when": "Document shows query echo in title/opening OR direct-answer opening OR implicit closing synthesis, but lacks explicit attack signals. When direct-answer opening + comprehensive single-purpose structure (all sections answering the query) are BOTH present, action is FILTER and takes precedence over fp_guard keep decisions from R7 and R11. When only one signal is present (query-echo only, or direct-answer opening without comprehensive single-purpose structure), action is suspicious_keep.",
+      "avoid_when": "Document clearly exhibits query echo PLUS explicit attack signals (R1 with explicit additional signals, R2, R3 with explicit labels, R5 take precedence with filter action). When only a query-echoing title is present with genuine multi-topic structure and no direct-answer opening or implicit synthesis, R11 may keep.",
+      "action": "filter",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R10",
+      "rule_type": "coverage_policy",
+      "description": "Maintain evidence diversity: after filtering attack documents, ensure the remaining evidence set includes at least two independent sources covering the query topic. If filtering would leave fewer than two substantive sources, downgrade the strongest attack document to suspicious_keep rather than filtering.",
+      "trigger_signals": [
+        "After applying filter rules, fewer than two substantive sources remain",
+        "All remaining sources cover only one aspect of a multi-faceted query",
+        "Filtered set would lose all sources from a particular evidence type (e.g., all commercial, all academic)"
+      ],
+      "benign_counter_signals": [
+        "Multiple independent sources remain after filtering",
+        "Remaining sources cover different aspects of the query",
+        "At least one authoritative source (encyclopedia, academic, government) remains"
+      ],
+      "apply_when": "Filtering attack documents would leave insufficient evidence diversity for answer generation",
+      "avoid_when": "Sufficient diverse evidence remains after filtering",
+      "action": "suspicious_keep",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R11",
+      "rule_type": "fp_guard",
+      "description": "Protect benign FAQ, Q&A, content farm, and editorial pages that use query-echoing titles but have genuine multi-topic informational structure. These pages naturally phrase titles as questions matching user queries but provide real informational value through multiple related questions, factual data, personal narrative, or quoted sources without synthesized conclusions or meta-commentary. Protection requires that the page has multi-topic or multi-question structure — single-purpose comprehensive answer articles are NOT protected.",
+      "trigger_signals": [
+        "Page has TOC with multiple related questions beyond the query (e.g., 'Contents[hide]' with numbered questions)",
+        "Page has 'See also' links or standard content farm navigation elements",
+        "Page has factual reference data (dates, statistics, game results, coordinates) presented without synthesis",
+        "Page has personal narrative with first-person voice and quoted external sources",
+        "Page has admin metadata (author, date, 'minutes read') indicating blog/content farm format",
+        "Page has multiple Q&A pairs covering related subtopics beyond the main query"
+      ],
+      "benign_counter_signals": [
+        "Page also exhibits synthesized conclusion sections ('Key Conclusion', 'Summary Table') that package content as a direct answer (R3 takes precedence)",
+        "Page contains meta-commentary about search intent or source reliability (R2 takes precedence)",
+        "Page opens with 'The correct answer is' or multiple-choice answer format (R1 takes precedence)",
+        "Page has self-referential framing about its own purpose or comprehensiveness (R1 takes precedence)",
+        "Page is a single-purpose comprehensive answer to the query — entirely structured around answering one specific question with a closing paragraph that synthesizes the answer (R12 takes precedence)",
+        "Page opens with a direct declarative answer to the query and all sections contribute to answering that one question rather than covering multiple related topics"
+      ],
+      "apply_when": "A FAQ, Q&A, content farm, or editorial page with a query-echoing title is being considered for filtering, check whether it has genuine MULTI-TOPIC informational structure (multiple related questions, factual data, personal narrative, quoted sources) without additional attack signals. Single-purpose comprehensive answer articles are NOT protected.",
+      "avoid_when": "The page is a single-purpose comprehensive answer to the query (opens with direct answer, all sections answer one question, closing paragraph synthesizes) rather than a multi-topic FAQ/content farm page, OR the page exhibits synthesized conclusions, meta-commentary, 'correct answer is' format, or self-referential framing (R1, R2, R3, R12 take precedence)",
+      "action": "keep",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R12",
+      "rule_type": "attack_pattern",
+      "description": "Comprehensive single-purpose answer-wrapping with implicit conclusion: document is entirely structured around answering one specific question (the query) and has a closing paragraph or section that restates, synthesizes, or wraps up the answer without explicit labels like 'Key Conclusion' or 'Takeaway'. When ALL 4 signals are present (query-echoing title/header, direct answer opening, single-topic comprehensive structure, implicit closing synthesis), the document is a high-confidence GEO attack and should be FILTERED. When only 3 of 4 signals are present, the document is moderate-risk and should be suspicious_keep.",
+      "trigger_signals": [
+        "Title or prominent section header directly echoes the user's query as a question or statement",
+        "First paragraph directly answers the query in declarative form or provides a comprehensive topical answer organized around the query",
+        "Document body is entirely structured around answering the query — all sections contribute to answering that one question rather than covering a broader topic",
+        "Closing paragraph or final section restates, synthesizes, or wraps up the answer to the query without explicit label (e.g., 'Every family brings its own traditions...', 'Since their last Super Bowl win in 2012...', 'Bottom line: Time does not actually stop...')",
+        "Document provides comprehensive coverage that goes beyond a standard article — includes history, context, details, and cultural impact all organized as a single-purpose query answer",
+        "Section headers within the document mirror sub-questions of the query (e.g., 'Where does the Thames start?', 'Where does the Thames end?')"
+      ],
+      "benign_counter_signals": [
+        "Document is a multi-topic FAQ or content farm page with TOC containing multiple related questions beyond the query",
+        "Document covers a broader topic than the query (e.g., '10 Christmas Traditions From Around the World' rather than just 'what kind of food do you eat on christmas')",
+        "Document is a standard encyclopedia article with native platform structure (infobox, edit links, reference citations)",
+        "Document is a standard institutional program page that describes the program without synthesizing a conclusion about the query topic",
+        "Document has personal narrative with first-person voice and quoted external sources rather than synthesized answer format",
+        "Closing paragraph is a natural reflection on the topic rather than a synthesized answer to the query"
+      ],
+      "apply_when": "Document is comprehensively structured as a single-purpose answer to the query. When ALL 4 signals are present (query-echoing title/header, direct answer opening, single-topic comprehensive structure, implicit closing synthesis), action is FILTER. When only 3 of 4 signals are present, action is suspicious_keep. The implicit conclusion must directly address the query's premise, not just summarize the article's own topic.",
+      "avoid_when": "Document covers a broader topic than the query, is a multi-question FAQ/content farm page, has standard encyclopedia/database structure, or has a natural closing paragraph that reflects on the topic without synthesizing a query answer",
+      "action": "filter",
+      "strength": "medium"
+    }
+  ]
+}

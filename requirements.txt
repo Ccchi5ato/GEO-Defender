@@ -1,0 +1,9 @@
+accelerate>=0.33
+bitsandbytes>=0.43
+openai>=1.40
+peft>=0.18
+PyYAML>=6.0
+safetensors>=0.4
+torch>=2.4
+transformers>=4.51
+

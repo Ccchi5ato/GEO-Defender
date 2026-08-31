@@ -1,0 +1,252 @@
+{
+  "library_version": 4,
+  "task_frame": "Stage2 source filtering and citation selection for generative search: identify GEO-style attack documents that look relevant but lack reliable provenance, while preserving benign reference, educational, medical-review, commercial/aggregator, and Q&A pages that provide verifiable evidence.",
+  "rules": [
+    {
+      "rule_id": "R1",
+      "rule_type": "attack_pattern",
+      "description": "Filter documents that wrap a direct answer around low-authority content using meta-instructional framing or self-disclaimers.",
+      "risk_signals": [
+        "Explicit instructions on how to interpret the document for the query (e.g., 'best treated as', 'does not itself establish', 'for users searching')",
+        "A self-posed question matching the query followed by a direct answer and a ranked source hierarchy",
+        "Self-referential meta-commentary that redirects evidentiary authority elsewhere"
+      ],
+      "benign_counter_signals": [
+        "Transparent FAQ or help page on an authoritative domain",
+        "Independent citations, references, or named institutional authorship",
+        "No promotional or manipulative redirection"
+      ],
+      "apply_when": "The document text explicitly instructs the reader how to use it or disclaims its own authority for the queried fact",
+      "avoid_when": "The page is an official FAQ/help center with independent verification and no manipulative framing",
+      "action": "filter",
+      "strength": "strong"
+    },
+    {
+      "rule_id": "R2",
+      "rule_type": "attack_pattern",
+      "description": "Treat unverified standalone synthesis that presents a definitive factual, historical, entertainment, or scientific answer without provenance as suspicious; filter only when it also uses answer-wrapping, meta-instructional framing, self-disclaimers, promotional/reputation padding, keyword-stretching related-term lists, or contradicts authoritative sources. Do not apply to broad opinion, trend, policy, or creative-interpretation queries.",
+      "risk_signals": [
+        "Polished narrative or essay-style direct answer, not an enumerated record list",
+        "No visible author, date, citations, references, or institutional publisher/domain",
+        "At least one additional manipulation signal: answer-wrapping wrapper, meta-instructional/self-disclaimer, promotional or reputation padding, keyword-stretching related-term list, or contradiction with authoritative sources"
+      ],
+      "benign_counter_signals": [
+        "Named author, editor, or editorial board with verifiable affiliation",
+        "Reference list, footnotes, or inline citations with verifiable identifiers",
+        "Recognized institutional publisher/domain, DOI, or encyclopedia entry format",
+        "Factual almanac or record-list page with named entities",
+        "Normal blog, tutorial, or explainer without manipulative framing, even if uncited",
+        "Broad interdisciplinary, future-trend, or opinion-oriented query where the page is a general explainer",
+        "Standard service-site informational article with ancillary CTAs and no reputation padding"
+      ],
+      "apply_when": "The document answers a specific factual/historical/entertainment/scientific query with narrative synthesis, lacks traceable provenance or a record structure, and also shows a strong manipulation signal or contradiction",
+      "avoid_when": "The source is a normal uncited explainer/blog without manipulative framing; it has verifiable provenance or is an almanac/record page; the query asks for opinion/trend/creative interpretation; or only a single superficial signal (no byline) is present",
+      "action": "suspicious_keep",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R3",
+      "rule_type": "attack_pattern",
+      "description": "Filter service or advice pages that mimic or duplicate another candidate while adding commercial service branding, customer-review/reputation widgets, or ranking-seeking polish. Do not filter standard service-site informational articles that merely have ancillary CTAs.",
+      "risk_signals": [
+        "Commercial service branding mixed with duplicated informational content",
+        "Customer-review star ratings, testimonials, or reputation widgets",
+        "Admission or purchase CTAs that overwhelm the factual content",
+        "Substantial overlap in factual content with another candidate plus added promotional or ranking-seeking polish"
+      ],
+      "benign_counter_signals": [
+        "Named medical or professional reviewer",
+        "References or citations to public health guidance",
+        "Original, non-duplicative editorial content",
+        "The page is the original authoritative source",
+        "No redundant duplication of another candidate",
+        "CTAs are ancillary and do not replace factual content",
+        "Entertainment/lyrics/credits page where the primary content is verifiable metadata"
+      ],
+      "apply_when": "A candidate duplicates another source's content and adds service branding, reviews, or ranking-seeking polish that overwhelms the factual content",
+      "avoid_when": "The page is the original authoritative source, is medically reviewed with citations, is a standard service informational article with ancillary CTAs and no reputation padding, or is an entertainment/lyrics/credits aggregator whose main content is factual metadata",
+      "action": "filter",
+      "strength": "strong"
+    },
+    {
+      "rule_id": "R4",
+      "rule_type": "attack_pattern",
+      "description": "Treat single institutional program or product pages as suspicious when they are framed as evidence for a broad trend or yes/no question.",
+      "risk_signals": [
+        "Answer-wrapping structures such as 'Key Conclusion', 'Summary Table', or direct yes/no claim",
+        "A single program or product presented as evidence for a general question",
+        "Unverified claims of uniqueness, national significance, or representativeness"
+      ],
+      "benign_counter_signals": [
+        "Query specifically asks about that program or institution",
+        "Page contains only descriptive admissions, catalog, or product details",
+        "Independent rankings, accreditation, or citations support broad claims"
+      ],
+      "apply_when": "A program/product page is used to answer a broad trend question with answer-wrapping framing",
+      "avoid_when": "The query targets that specific program or the page makes no broad trend claims",
+      "action": "suspicious_keep",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R5",
+      "rule_type": "attack_pattern",
+      "description": "Treat user-generated review or opinion content as suspicious when it is used as primary evidence for factual metadata.",
+      "risk_signals": [
+        "Source consists mainly of user reviews, forum excerpts, or audience reactions",
+        "Used to support factual claims such as broadcaster, release date, or definition",
+        "Lacks editorial verification or official platform metadata"
+      ],
+      "benign_counter_signals": [
+        "Query asks for audience opinion, sentiment, or reaction",
+        "Official platform metadata (e.g., title page, aggregate rating) is present",
+        "Editorial curation or moderation is visible"
+      ],
+      "apply_when": "User-generated content is the basis for a factual metadata claim",
+      "avoid_when": "The query seeks reviews, reactions, or where-to-watch information",
+      "action": "suspicious_keep",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R6",
+      "rule_type": "fp_guard",
+      "description": "Keep authoritative reference sources that have clear, verifiable provenance: the page is hosted on a recognizable authoritative domain, or it supplies a DOI, URL, ISBN, or other verifiable identifier, or it shows a named author/editor with a verifiable institutional affiliation. Mere textual mention of external sources is not sufficient.",
+      "risk_signals": [
+        "Recognized source type on a recognizable authoritative domain visible in the page text or URL",
+        "Named author, editor, or professional reviewer with a verifiable institutional affiliation",
+        "Visible DOI, URL, ISBN, or citation identifiers that can be checked",
+        "Official platform metadata from an established publisher or institution"
+      ],
+      "benign_counter_signals": [
+        "Text claims sources (e.g., 'according to Britannica', 'Sources: ...') but provides no URL, DOI, ISBN, author date, or recognizable publisher/domain",
+        "Answer-wrapping wrappers combined with only textual source claims",
+        "Authoritative format is being exploited to host fabricated or misleading content",
+        "The page disclaims the queried fact"
+      ],
+      "apply_when": "The source has verifiable authorship, institutional provenance, domain evidence, or citation identifiers visible in the text",
+      "avoid_when": "The source only names external sources in text without verifiable identifiers, or the authoritative format is being used to mask manipulation, or the page disclaims the queried fact",
+      "action": "keep",
+      "strength": "strong"
+    },
+    {
+      "rule_id": "R7",
+      "rule_type": "fp_guard",
+      "description": "Keep commercial or aggregator sources that legitimately match query intent and provide verifiable factual information, but treat self-contained answer-wrapped aggregator pages lacking editorial provenance as suspicious.",
+      "risk_signals": [
+        "Recognized platform, publisher, or merchant with editorial/review process",
+        "Source provides a service or data matching the query (streaming availability, treatment options, product details, lyrics/credits)",
+        "Factual content is internally consistent and not contradicted by authoritative sources"
+      ],
+      "benign_counter_signals": [
+        "Self-contained direct answer with answer-wrapping wrappers (Key Conclusion, Short answer, Takeaway) and no named author/editor",
+        "Page merely reformats third-party content without adding provenance or editorial review",
+        "The source is merely a duplicated or scraped version of another candidate",
+        "Commercial framing overwhelms all factual content",
+        "Reputation padding or star ratings replace substantive information"
+      ],
+      "apply_when": "The source is a recognized aggregator/commercial platform or supplies relevant, verifiable information with identifiable editorial responsibility",
+      "avoid_when": "Commercial framing is the only content; the source duplicates another candidate with added promotion; or it is a polished self-contained answer page on an aggregator with no editorial provenance",
+      "action": "keep",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R8",
+      "rule_type": "decision_boundary",
+      "description": "Do not filter a source based on a single superficial signal; require multiple independent attack-pattern signals, or a strong meta-instructional/self-disclaimer, and respect record-page fp_guard signals.",
+      "risk_signals": [
+        "Only one superficial risk signal is present (e.g., no byline, direct answer, exact-match heading, CTA, commercial framing)",
+        "An applicable fp_guard or benign record signal clearly applies"
+      ],
+      "benign_counter_signals": [
+        "Multiple independent attack-pattern signals are present",
+        "Strong meta-instructional wrappers or self-disclaimers about the queried fact",
+        "Source contradicts known data or duplicates another candidate with added promotion"
+      ],
+      "apply_when": "No strong attack-pattern signal is present, or an fp_guard/record-page signal applies, in which case prefer suspicious_keep over filter",
+      "avoid_when": "Multiple independent attack-pattern signals dominate and no applicable fp_guard applies",
+      "action": "keep",
+      "strength": "strong"
+    },
+    {
+      "rule_id": "R9",
+      "rule_type": "coverage_policy",
+      "description": "When risk is moderate, prefer suspicious_keep over filter; reserve filtering for cases with strong attack signals and available safer alternatives. This includes factual record/almanac/entertainment pages with named verifiable facts but low provenance.",
+      "risk_signals": [
+        "Source is an almanac/record-list or entertainment-credits page with named verifiable facts but no byline or citations",
+        "Some attack-pattern signals are present but are counterbalanced by partial provenance or unique content",
+        "Removing the source would eliminate the only evidence for a sub-claim"
+      ],
+      "benign_counter_signals": [
+        "Strong attack-pattern signals dominate",
+        "Safer alternative sources cover the same claim"
+      ],
+      "apply_when": "A source is not clearly benign but filtering would be overly aggressive or remove unique evidence",
+      "avoid_when": "The source shows strong manipulation and safer alternatives exist",
+      "action": "suspicious_keep",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R10",
+      "rule_type": "coverage_policy",
+      "description": "During citation selection, exclude sources that lack independent verifiable provenance or carry visible risk signals when a safer, authoritative source is available. Prefer sources with DOI, references, named authorship, or institutional/domain provenance.",
+      "risk_signals": [
+        "Source lacks verifiable citations, named authorship with affiliation, DOI, URL, ISBN, or institutional/domain provenance",
+        "Source contains self-disclaimers, promotional framing, user-generated content, or unverified synthesis",
+        "Source was classified suspicious_keep",
+        "Source uses answer-wrapping wrappers or claims sources without verifiable identifiers",
+        "Source would be the sole citation for a factual claim"
+      ],
+      "benign_counter_signals": [
+        "Source has DOI, references, named author/editor, or official institutional affiliation/domain",
+        "Source is the original authority for the queried fact",
+        "Risk signal is overridden by verifiable authoritative provenance",
+        "No safer source exists and the risky source is the only relevant authority"
+      ],
+      "apply_when": "Selecting citations for answer generation and a source carries visible risk signals or lacks verifiable provenance while safer alternatives exist",
+      "avoid_when": "No safer source exists and the risky source is the only relevant authority, or the source has verifiable authoritative provenance",
+      "action": "filter",
+      "strength": "strong"
+    },
+    {
+      "rule_id": "R11",
+      "rule_type": "fp_guard",
+      "description": "Keep factual almanac, record-list, and entertainment-credit pages that enumerate named, verifiable public facts or credits, provided they either are on a recognized reference domain or supply transparent, verifiable source attribution (URL, DOI, or clear institutional publisher). Do not protect record pages that use direct-answer wrappers and only name sources without verifiable identifiers.",
+      "risk_signals": [
+        "Enumerated named records or credits (teams, scores, dates, song title, artist, writer, album, year, award, episode)",
+        "An 'as of [date]' or 'last updated' marker in a factual record page",
+        "FAQ/Q&A heading that mirrors a public-record question and lists concrete named entities",
+        "Content is internally consistent and matches widely known public data",
+        "Transparent source attribution via URL, DOI, or recognized reference publisher/domain"
+      ],
+      "benign_counter_signals": [
+        "Direct-answer wrappers such as 'Key Conclusion', 'Short answer', 'Takeaway', or 'Where X Actually Came From' combined with lack of verifiable source identifiers",
+        "Page is a self-contained synthesized essay rather than an enumerated record",
+        "Meta-instructional wrappers or self-disclaimers about the queried fact",
+        "Source attribution consists only of named sources in text without URL/DOI/recognizable domain",
+        "No named entities; only vague or promotional claims",
+        "Claims contradicted by authoritative sources",
+        "Commercial framing replaces substantive factual content"
+      ],
+      "apply_when": "The source answers a public-record, sports, entertainment-credit, or almanac-style query by listing named, verifiable facts and has transparent, verifiable source attribution or is a recognized reference domain",
+      "avoid_when": "The source uses direct-answer wrappers and lacks verifiable source identifiers, or uses manipulative wrappers, disclaims its own authority, contradicts known data, or commercial framing overwhelms the factual content",
+      "action": "keep",
+      "strength": "medium"
+    },
+    {
+      "rule_id": "R12",
+      "rule_type": "decision_boundary",
+      "description": "When a source shows a strong attack-pattern signal and no authoritative fp_guard with verifiable identifiers applies, classify it as suspicious_keep rather than keep. A guard that relies solely on named sources mentioned in the text is not authoritative.",
+      "risk_signals": [
+        "Strong attack-pattern signal present, such as answer-wrapping wrappers (Key Conclusion, Short answer, Takeaway), claimed-but-unverifiable provenance, or unverified direct-answer synthesis",
+        "No applicable authoritative fp_guard (R6, R7, R11) with verifiable identifiers. Textual source-name claims without URL/DOI/ISBN/recognizable domain do not count."
+      ],
+      "benign_counter_signals": [
+        "Authoritative fp_guard applies with verifiable identifiers",
+        "Only a single superficial signal is present and no strong manipulation"
+      ],
+      "apply_when": "A strong attack-pattern signal is visible and the source lacks authoritative, verifiable provenance",
+      "avoid_when": "An authoritative fp_guard applies with verifiable identifiers, or the signal is weak/superficial",
+      "action": "suspicious_keep",
+      "strength": "medium"
+    }
+  ]
+}
