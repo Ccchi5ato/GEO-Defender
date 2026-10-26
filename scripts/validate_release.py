@@ -67,8 +67,8 @@ def validate_dataset() -> None:
 
 def validate_artifacts() -> None:
     libraries = sorted((ROOT / "artifacts" / "experience_libraries").glob("*.json"))
-    if len(libraries) != 5:
-        raise ValueError(f"Expected five experience libraries, found {len(libraries)}")
+    if len(libraries) != 6:
+        raise ValueError(f"Expected six experience libraries, found {len(libraries)}")
     for path in libraries:
         value = json.loads(path.read_text(encoding="utf-8-sig"))
         if not isinstance(value, dict) or not isinstance(value.get("rules"), list):
@@ -113,7 +113,7 @@ def main() -> None:
     scan_release_metadata()
     print("Release validation passed.")
     print("Dataset: 12/88 clean queries; 36/616 attack-injected instances; 7 GEO methods.")
-    print("Artifacts: 1 Shield Reranker adapter; 5 experience libraries.")
+    print("Artifacts: 1 Shield Reranker adapter; 6 experience libraries.")
 
 
 if __name__ == "__main__":

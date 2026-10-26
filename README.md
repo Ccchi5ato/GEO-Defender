@@ -10,10 +10,9 @@ Reference implementation and resources for **GEO Defender**, a two-stage defense
 ```text
 geo_defender/     Core two-stage implementation
 scripts/          Training, library construction, and inference entry points
-artifacts/        Released LoRA adapter and five experience libraries
+artifacts/        Released LoRA adapter and six experience libraries
 data/             GEO-DefenseBench
 examples/         Minimal input examples
-configs/          Shield Reranker configuration
 ```
 
 ## Dataset
